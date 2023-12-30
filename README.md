@@ -1,4 +1,4 @@
-# FilOS
+# FilOS🍇
 
 The Friendly Python OS.
 
