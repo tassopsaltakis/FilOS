@@ -6,7 +6,7 @@ Discord: https://discord.gg/pWtDgDTDMa
 
 ## Installation
 
-Download all of the files for the 'src' directory from this repo or clone the repo directly to your own src folder:
+Download all of the files for the 'src' directory from this repo or clone the repo directly to your own system (it should automatically create the FilOS/root/src directories for you):
 
 ```bash
 git clone https://github.com/tassopsaltakis/FilOS.git
