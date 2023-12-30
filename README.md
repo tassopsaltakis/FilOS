@@ -9,7 +9,7 @@ Discord: https://discord.gg/pWtDgDTDMa
 Download all of the files for the 'src' directory from this repo or clone the repo directly to your own src folder:
 
 ```bash
-git clone https://github.com/TPlaysNow/FilOS.git
+git clone https://github.com/tassopsaltakis/FilOS.git
 ```
 
 ## Usage
