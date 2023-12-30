@@ -19,7 +19,7 @@ FilOS/                       #FilOS Folder
 │                      
 └── root/
     ├── home/                # User home directories
-    │   └── [user1]/         #Your user directory will automatically be created upon user creation
+    │   └── [user1]/         # Your user directory will automatically be created upon user creation
     │
     ├── tmp/                 # Temporary files
     │
