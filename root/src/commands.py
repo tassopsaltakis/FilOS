@@ -1,157 +1,127 @@
 import os
 import shutil
-from user_management import UserManagement
+import subprocess
 
-# Establish FilOS root directory as one level up from this script
-FIL_OS_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-
-# Possible user statuses
-NORMAL_USER = 0
-SUPER_USER = 1
-
-# Current user status - defaulting to normal user
-current_user_status = NORMAL_USER
-
-# Session token for superuser
-superuser_session_token = None
-
-def su():
-    global current_user_status
-    global superuser_session_token
-    user_mgmt = UserManagement()
-    superuser_password = input("Enter superuser password: ")
-    if user_mgmt.authenticate_superuser(superuser_password):
-        print("Superuser mode activated.")
-        current_user_status = SUPER_USER
-        superuser_session_token = os.urandom(16)
-    else:
-        print("Superuser authentication failed.")
-
-def ls(directory):
+def ls(current_dir, *args):
+    directory = args[0] if args else current_dir
     try:
-        files = os.listdir(directory)
-        for file in files:
-            print(file)
+        for entry in os.listdir(directory):
+            print(entry)
     except Exception as e:
         print(f"ls: cannot access '{directory}': {e}")
 
-def cd(current_dir, target_dir):
-    new_path = os.path.normpath(os.path.join(current_dir, target_dir))
-    if not new_path.startswith(FIL_OS_ROOT):
-        print(f"cd: Access denied: you are at {current_dir}")
-        return current_dir
+def cd(current_dir, *args):
+    new_dir = os.path.join(current_dir, args[0]) if args else current_dir
+    return new_dir if os.path.isdir(new_dir) else current_dir
 
-    if os.path.isdir(new_path):
-        return new_path
+def pwd(current_dir, *args):
+    print(current_dir)
+
+def mkdir(current_dir, *args):
+    for dirname in args:
+        path = os.path.join(current_dir, dirname)
+        try:
+            os.makedirs(path)
+            print(f"Directory '{dirname}' created.")
+        except Exception as e:
+            print(f"mkdir: cannot create directory '{dirname}': {e}")
+
+def rmdir(current_dir, *args):
+    for dirname in args:
+        path = os.path.join(current_dir, dirname)
+        try:
+            os.rmdir(path)
+            print(f"Directory '{dirname}' removed.")
+        except Exception as e:
+            print(f"rmdir: failed to remove '{dirname}': {e}")
+
+def touch(current_dir, *args):
+    for filename in args:
+        path = os.path.join(current_dir, filename)
+        try:
+            open(path, 'a').close()
+            os.utime(path, None)
+            print(f"File '{filename}' touched.")
+        except Exception as e:
+            print(f"touch: cannot touch '{filename}': {e}")
+
+def cat(current_dir, *args):
+    for filename in args:
+        path = os.path.join(current_dir, filename)
+        try:
+            with open(path, 'r') as file:
+                print(file.read())
+        except Exception as e:
+            print(f"cat: cannot open '{filename}': {e}")
+
+def rm(current_dir, *args):
+    for filename in args:
+        path = os.path.join(current_dir, filename)
+        try:
+            os.remove(path)
+            print(f"File '{filename}' removed.")
+        except Exception as e:
+            print(f"rm: cannot remove '{filename}': {e}")
+
+def cp(current_dir, *args):
+    if len(args) == 2:
+        source, destination = os.path.join(current_dir, args[0]), os.path.join(current_dir, args[1])
+        try:
+            shutil.copy(source, destination)
+            print(f"Copied '{args[0]}' to '{args[1]}'.")
+        except Exception as e:
+            print(f"cp: cannot copy '{args[0]}': {e}")
+
+def mv(current_dir, *args):
+    if len(args) == 2:
+        source, destination = os.path.join(current_dir, args[0]), os.path.join(current_dir, args[1])
+        try:
+            shutil.move(source, destination)
+            print(f"Moved '{args[0]}' to '{args[1]}'.")
+        except Exception as e:
+            print(f"mv: cannot move '{args[0]}': {e}")
+
+def pad(current_dir, *args):
+    if args:
+        filename = os.path.join(current_dir, args[0])  # Assumes args[0] is the filename
+        pad_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'root', 'misc', 'pad', 'pad.py'))
+        subprocess.run(['python', pad_path, filename])
     else:
-        print(f"cd: no such file or directory: {target_dir}")
-        return current_dir
+        print("Usage: pad filename")
 
-def pwd(current_dir):
-    return current_dir
+# Define the command dictionary
+commands = {
+    "ls": ls,
+    "cd": cd,
+    "pwd": pwd,
+    "mkdir": mkdir,
+    "rmdir": rmdir,
+    "touch": touch,
+    "cat": cat,
+    "rm": rm,
+    "cp": cp,
+    "mv": mv,
+    "pad" : pad
+}
 
-def mkdir(current_dir, dirname):
-    new_path = os.path.join(current_dir, dirname)
-    try:
-        os.makedirs(new_path)
-        print(f"Directory created at {new_path}")
-    except Exception as e:
-        print(f"mkdir: cannot create directory '{dirname}': {e}")
+# Function to execute commands based on the command name
+def execute_command(command_name, *args):
+    if command_name in commands:
+        try:
+            # If the command function returns a value, it could be handled here (e.g., new current directory from cd)
+            return commands[command_name](*args)
+        except Exception as e:
+            print(f"Error executing command '{command_name}': {e}")
+    else:
+        print(f'Command "{command_name}" not recognized.')
 
-def rmdir(current_dir, dirname):
-    dir_path = os.path.join(current_dir, dirname)
-    try:
-        os.rmdir(dir_path)
-        print(f"Directory removed: {dir_path}")
-    except Exception as e:
-        print(f"rmdir: failed to remove '{dirname}': {e}")
+# Example usage (this part would typically be in your main shell script):
+if __name__ == '__main__':
+    # Simulate user input
+    user_input = "ls"
+    execute_command(user_input)
 
-def touch(current_dir, filename):
-    file_path = os.path.join(current_dir, filename)
-    try:
-        open(file_path, 'a').close()
-        os.utime(file_path, None)
-    except Exception as e:
-        print(f"touch: cannot touch '{filename}': {e}")
-
-def cat(current_dir, filename):
-    file_path = os.path.join(current_dir, filename)
-    try:
-        with open(file_path, 'r') as file:
-            print(file.read())
-    except Exception as e:
-        print(f"cat: cannot open '{filename}': {e}")
-
-def rm(filename):
-    if current_user_status != SUPER_USER:
-        print("Operation not permitted: requires superuser privileges.")
-        return
-    
-    try:
-        os.remove(filename)
-        print(f"Removed {filename}")
-    except Exception as e:
-        print(f"rm: cannot remove '{filename}': {e}")
-
-def cp(source, destination):
-    try:
-        shutil.copy(source, destination)
-        print(f"Copied {source} to {destination}")
-    except Exception as e:
-        print(f"cp: cannot copy '{source}': {e}")
-
-def mv(source, destination):
-    try:
-        shutil.move(source, destination)
-        print(f"Moved {source} to {destination}")
-    except Exception as e:
-        print(f"mv: cannot move '{source}': {e}")
-
-def echo(text):
-    print(text)
-
-if __name__ == "__main__":
-    while True:
-        command_line = input("$ ").strip()
-        parts = command_line.split()
-        command = parts[0]
-        args = parts[1:]
-
-        if command == 'su':
-            su()
-        elif command == 'ls':
-            ls(FIL_OS_ROOT)
-        elif command == 'cd':
-            if args:
-                FIL_OS_ROOT = cd(FIL_OS_ROOT, args[0])
-        elif command == 'pwd':
-            print(pwd(FIL_OS_ROOT))
-        elif command == 'mkdir':
-            if args:
-                mkdir(FIL_OS_ROOT, args[0])
-        elif command == 'rmdir':
-            if args:
-                rmdir(FIL_OS_ROOT, args[0])
-        elif command == 'touch':
-            if args:
-                touch(FIL_OS_ROOT, args[0])
-        elif command == 'cat':
-            if args:
-                cat(FIL_OS_ROOT, args[0])
-        elif command == 'rm':
-            if args:
-                rm(args[0])
-        elif command == 'cp':
-            if len(args) >= 2:
-                cp(args[0], args[1])
-        elif command == 'mv':
-            if len(args) >= 2:
-                mv(args[0], args[1])
-        elif command == 'echo':
-            if args:
-                echo(" ".join(args))
-        elif command == 'exit':
-            print("Exiting FilOS.")
-            break
-        else:
-            print(f"Command '{command}' not recognized.")
+    # Simulate changing directory
+    new_dir = execute_command("cd", "/", "some_directory")
+    if new_dir:
+        print(f"Changed directory to {new_dir}")

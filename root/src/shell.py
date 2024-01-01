@@ -8,7 +8,7 @@ class FilOSShell:
         self.root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'root'))
         self.user_mgmt = UserManagement()
         self.current_user = None
-        self.current_dir = None
+        self.current_dir = self.root_dir  # Start at root directory
         self.is_superuser = False
 
     def update_prompt(self):
@@ -46,17 +46,20 @@ class FilOSShell:
         """Execute a command from the input line."""
         parts = command_line.split()
         command = parts[0]
-        args = parts[1:]
+        args = parts[1:]  # Arguments for the command
 
-        command_function = getattr(commands, command, None)
+        # Update context if command is 'cd' and ensure current_dir is always updated
+        if command == 'cd' and args:
+            new_dir = commands.execute_command(command, self.current_dir, *args)
+            if new_dir:  # If cd command returns a new path, update current directory
+                self.current_dir = new_dir
+            return
 
-        if command_function:
-            try:
-                command_function(self, args)
-            except Exception as e:
-                print(f"Error executing command {command}: {e}")
-        else:
-            print(f'Command "{command}" not recognized by system.')
+        # Execute other commands using the commands module
+        try:
+            commands.execute_command(command, self.current_dir, *args)
+        except Exception as e:
+            print(f"Error executing command {command}: {e}")
 
 if __name__ == "__main__":
     shell = FilOSShell()
