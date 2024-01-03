@@ -1,5 +1,11 @@
-Welcome to FilOS!
+Welcome to FilOS! - v 0.02.1
 
 ---Command List---
 mkdir
 rmdir
+rm
+cp
+mv
+pwd
+ls
+logout

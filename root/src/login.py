@@ -1,12 +1,8 @@
-# Import the necessary modules for user and group management
+# Import necessary modules
 from user_management import UserManagement
+import os
 
 def run_login_sequence():
-    """
-    Run the initial login sequence for the application.
-    Checks for superuser existence, creates one if necessary,
-    and then proceeds with regular user login or creation.
-    """
     user_mgmt = UserManagement()
 
     # Check and initiate superuser setup if necessary
@@ -17,14 +13,18 @@ def run_login_sequence():
     # Handle regular login or user creation based on group-based policies
     current_user, is_superuser = user_mgmt.run()
 
-    # Check user's group membership and apply group-based policies
+    # Set the directory for the user
     if is_superuser:
+        os.chdir(user_mgmt.root_dir)  # Change directory to root for superuser
         print(f"Logged in as superuser: {current_user}")
-        # Perform actions allowed for superusers
     else:
+        user_home = os.path.join(user_mgmt.home_dir, current_user)
+        os.makedirs(user_home, exist_ok=True)  # Ensure user home directory exists
+        os.chdir(user_home)  # Change directory to home for regular user
         print(f"Logged in as user: {current_user}")
-        # Perform actions allowed for regular users
+
+    # Your code for launching the shell or next steps goes here
+    # ...
 
 if __name__ == "__main__":
-    # Execute the login sequence when the script is run directly
     run_login_sequence()

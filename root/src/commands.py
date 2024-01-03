@@ -89,6 +89,7 @@ def pad(current_dir, *args):
     else:
         print("Usage: pad filename")
 
+
 # Define the command dictionary
 commands = {
     "ls": ls,
@@ -101,7 +102,7 @@ commands = {
     "rm": rm,
     "cp": cp,
     "mv": mv,
-    "pad" : pad
+    "pad" : pad,
 }
 
 # Function to execute commands based on the command name
