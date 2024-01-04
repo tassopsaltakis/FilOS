@@ -1,5 +1,6 @@
 import os
 import hashlib
+import getpass
 
 class UserManagement:
     def __init__(self):
@@ -118,7 +119,7 @@ class UserManagement:
     def run(self):
         if not self.superuser_exists():
             print("No superuser found. Setting up now.")
-            superuser_password = input("Enter superuser password: ")
+            superuser_password = getpass.getpass("Enter superuser password: ")
             self.create_superuser('superuser', superuser_password)
         while True:
             print("\nWelcome to FilOS!")
@@ -127,15 +128,21 @@ class UserManagement:
             choice = input("Select an option (1 or 2): ").strip()
             if choice == '1':
                 username = input("Enter username: ")
-                password = input("Enter password: ")
+                password = getpass.getpass("Enter password: ")
                 user_info = self.login_user(username, password)
                 if user_info:
                     username, is_superuser = user_info
                     return username, is_superuser
             elif choice == '2':
                 username = input("Enter username: ")
-                password = input("Enter password: ")
-                self.create_user(username, password)
+                password = getpass.getpass("Enter password: ")
+                password2 = getpass.getpass("Enter again: ")
+
+                if password != password2:
+                    print("Passwords didn't match. Please try again.")
+                
+                else:
+                    self.create_user(username, password)
             else:
                 print("Invalid option. Please try again.")
 
