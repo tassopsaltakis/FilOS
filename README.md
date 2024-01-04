@@ -1,4 +1,4 @@
-# FilOS🍇 Pre-Alpha Version 0.02.2
+# FilOS🍇 Pre-Alpha Version 0.02.3
 
 The Friendly Python OS.
 
