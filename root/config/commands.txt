@@ -1,0 +1,12 @@
+ls,ls
+cd,cd
+pwd,pwd
+mkdir,mkdir
+rmdir,rmdir
+touch,touch
+cat,cat
+rm,rm
+cp,cp
+mv,mv
+pad,pad
+calc,calc

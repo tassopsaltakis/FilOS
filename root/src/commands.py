@@ -1,6 +1,9 @@
 import os
 import shutil
 import subprocess
+import ast
+import operator
+
 
 def ls(current_dir, *args):
     directory = args[0] if args else current_dir
@@ -89,21 +92,51 @@ def pad(current_dir, *args):
     else:
         print("Usage: pad filename")
 
+def calc(current_dir, *args):
+    expression = ''.join(args)  # Joining args as the expression might be split into several arguments
+    allowed_operators = {
+        ast.Add: operator.add, 
+        ast.Sub: operator.sub, 
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,  
+        ast.Pow: operator.pow,
+        ast.BitXor: operator.xor,
+    }
 
-# Define the command dictionary
-commands = {
-    "ls": ls,
-    "cd": cd,
-    "pwd": pwd,
-    "mkdir": mkdir,
-    "rmdir": rmdir,
-    "touch": touch,
-    "cat": cat,
-    "rm": rm,
-    "cp": cp,
-    "mv": mv,
-    "pad" : pad,
-}
+    def evaluate_expression(node):
+        if isinstance(node, ast.Num):
+            return node.n
+        elif isinstance(node, ast.BinOp):
+            return allowed_operators[type(node.op)](evaluate_expression(node.left), evaluate_expression(node.right))
+        else:
+            raise TypeError(node)
+
+    try:
+        # Safely parse the expression
+        node = ast.parse(expression, mode='eval').body
+        result = evaluate_expression(node)
+        print(result)
+    except Exception as e:
+        print(f"Error calculating expression: {e}")
+
+script_dir = os.path.dirname(os.path.abspath(__file__))  # This is your current script directory (src)
+root_dir = os.path.abspath(os.path.join(script_dir, '..', '..', 'root'))  # This goes up two levels to FilOS
+config_dir = os.path.join(root_dir, 'config')  # This is the full path to your config directory
+# New function to load commands from file
+def load_commands_from_file(file_path):
+    command_map = {}
+    with open(file_path, 'r') as file:
+        for line in file.readlines():
+            parts = line.strip().split(',')  # Assuming the file has lines like "ls,ls"
+            if len(parts) == 2:
+                cmd, func_name = parts
+                if func_name in globals():  # Check if the function name exists in the global namespace
+                    command_map[cmd] = globals()[func_name]
+    return command_map
+
+# Load commands from the commands.txt file
+commands = load_commands_from_file(os.path.join(config_dir, 'commands.txt'))
+
 
 # Function to execute commands based on the command name
 def execute_command(command_name, *args):
