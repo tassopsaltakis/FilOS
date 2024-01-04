@@ -119,7 +119,7 @@ class UserManagement:
     def run(self):
         if not self.superuser_exists():
             print("No superuser found. Setting up now.")
-            superuser_password = input("Enter superuser password: ")
+            superuser_password = getpass.getpass("Enter superuser password: ")
             self.create_superuser('superuser', superuser_password)
         while True:
             print("\nWelcome to FilOS!")
