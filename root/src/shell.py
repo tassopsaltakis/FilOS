@@ -1,6 +1,7 @@
 import os
 from user_management import UserManagement
 import commands
+import time
 
 class FilOSShell:
     def __init__(self):
@@ -11,14 +12,17 @@ class FilOSShell:
         self.current_dir = self.root_dir  # Start at root directory
         self.is_superuser = False
 
+    
     def update_prompt(self):
         """Update the shell prompt based on the current user and directory."""
         if self.current_user:
             relative_path = os.path.relpath(self.current_dir, self.root_dir)
             prompt_end = "$" if self.is_superuser else ":"
+            current_time = time.ctime()
             purple_text = '\033[95m'
+            red_text = '\033[31m'
             reset_color = '\033[0m'
-            prompt = f"FilOS {purple_text}{self.current_user}{reset_color} ({relative_path}){prompt_end} "
+            prompt = f"FilOS {purple_text}{self.current_user}{reset_color} {red_text}[{current_time}]{reset_color} ({relative_path}){prompt_end} "
             return prompt
         else:
             return "FilOS: "
