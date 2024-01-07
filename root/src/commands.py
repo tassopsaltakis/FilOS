@@ -4,25 +4,23 @@ import subprocess
 import ast
 import operator
 
+def get_absolute_path(current_dir, path):
+    if os.path.isabs(path):
+        return os.path.normpath(path)
+
+    return os.path.normpath(f"{current_dir}/{path}")
+
 
 def ls(current_dir, *args):
     # figure out if the path is absolute or not
-    path = args[0].strip()
-    if len(path) < 0:
-        path = "."
+    path = get_absolute_path(current_dir, args[0].strip()) if len(args) else current_dir
 
-    if path[0] == "/":
-        directory = path
-    
-    else:
-        directory = current_dir 
-
-    directory = path if args else current_dir
+    # try the path
     try:
-        for entry in os.listdir(directory):
+        for entry in os.listdir(path):
             print(entry)
     except Exception as e:
-        print(f"ls: cannot access '{directory}': {e}")
+        print(f"ls: cannot access '{path}': {e}")
 
 def cd(current_dir, *args):
     new_dir = os.path.join(current_dir, args[0]) if args else current_dir
