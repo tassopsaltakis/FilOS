@@ -6,7 +6,18 @@ import operator
 
 
 def ls(current_dir, *args):
-    directory = args[0] if args else current_dir
+    # figure out if the path is absolute or not
+    path = args[0].strip()
+    if len(path) < 0:
+        path = "."
+
+    if path[0] == "/":
+        directory = path
+    
+    else:
+        directory = current_dir 
+
+    directory = path if args else current_dir
     try:
         for entry in os.listdir(directory):
             print(entry)
