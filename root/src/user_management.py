@@ -7,7 +7,7 @@ class UserManagement:
     def __init__(self):
         """Set up directories for user home and configuration files."""
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'root'))
+        root_dir = os.path.abspath(os.path.join(script_dir, '..', '..', 'root'))
         self.home_dir = os.path.join(root_dir, 'home')
         self.config_dir = os.path.join(root_dir, 'config')
         self.users_file = os.path.join(self.config_dir, 'users.txt')
@@ -27,9 +27,13 @@ class UserManagement:
         """Load user information from the users_file."""
         if os.path.exists(self.users_file):
             with open(self.users_file, 'r') as file:
-                for line in file:
-                    username, password_hash, password_salt = line.strip().split(',')
-                    self.users[username] = {'password': password_hash, 'salt': password_salt}
+                for username in file:
+                    username = username.strip()
+                    access_path = os.path.join(self.home_dir, username, "user_data", "access.txt")
+                    if os.path.exists(access_path):
+                        with open(access_path, 'r') as access_file:
+                            password_hash, password_salt = access_file.read().strip().split(',')
+                        self.users[username] = {'password': password_hash, 'salt': password_salt}
 
     def load_group_info(self):
         """Load group information from the groups_file."""
@@ -38,14 +42,6 @@ class UserManagement:
                 for line in file:
                     group_name, members = line.strip().split(':')
                     self.groups[group_name] = members.split(',')
-
-    def save_user_info(self):
-        """Save user information to the users_file."""
-        with open(self.users_file, 'w') as file:
-            for username, user_info in self.users.items():
-                password_hash = user_info['password']
-                password_salt = user_info['salt']
-                file.write(f"{username},{password_hash},{password_salt}\n")
 
     def save_group_info(self):
         """Save group information to the groups_file."""
@@ -67,16 +63,21 @@ class UserManagement:
             password_salt = secrets.token_urlsafe(32)
             salted_password = (password + password_salt).encode()
             hashed_password = hashlib.sha256(salted_password).hexdigest()
-            self.users[username] = {'password': hashed_password, 'salt': password_salt}
+
+            # Save password hash and salt in the user's access.txt file
+            user_data_path = os.path.join(user_path, "user_data")
+            os.makedirs(user_data_path, exist_ok=True)
+            with open(os.path.join(user_data_path, "access.txt"), 'w') as access_file:
+                access_file.write(f"{hashed_password},{password_salt}\n")
+
+            # Update user list in users.txt
+            with open(self.users_file, 'a') as file:
+                file.write(f"{username}\n")
 
             # Add user to groups and create home directory
             if is_superuser:
                 self.add_user_to_group(username, 'superuser')
             self.add_user_to_group(username, 'user')
-
-            # Save user information
-            self.save_user_info()
-            self.save_group_info()
 
             print(f"\n{'Superuser' if is_superuser else 'User'} {username} created successfully! Ready to login.\n")
         else:
@@ -84,7 +85,7 @@ class UserManagement:
 
     def login_user(self, username, password):
         """Authenticate a user and check group-based permissions."""
-        if username in self.users and 'password' in self.users[username]:
+        if username in self.users:
             stored_password = self.users[username]['password']
             stored_salt = self.users[username]['salt']
             if hashlib.sha256((password + stored_salt).encode()).hexdigest() == stored_password:
@@ -95,7 +96,6 @@ class UserManagement:
         else:
             print("User authentication data not found.")
         return None
-
     def is_superuser(self, username):
         """Check if the given username corresponds to a superuser."""
         return self.user_in_group(username, 'superuser')
