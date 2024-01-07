@@ -39,7 +39,11 @@ class FilOSShell:
                 self.current_user, self.is_superuser = user_info
                 self.current_dir = os.path.join(self.root_dir, 'home', self.current_user)
                 while True:
-                    command_line = input(self.update_prompt()).strip()
+                    try:
+                        command_line = input(self.update_prompt()).strip()
+                    except EOFError:
+                        self.exit()
+
                     if command_line:
                         self.execute_command(command_line)
                     if command_line == 'logout':
