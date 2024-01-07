@@ -12,6 +12,10 @@ class FilOSShell:
         self.current_dir = self.root_dir  # Start at root directory
         self.is_superuser = False
 
+    def exit(self):
+        print("Exiting FilOS.")
+        quit(0)
+
     
     def update_prompt(self):
         """Update the shell prompt based on the current user and directory."""
@@ -35,7 +39,11 @@ class FilOSShell:
                 self.current_user, self.is_superuser = user_info
                 self.current_dir = os.path.join(self.root_dir, 'home', self.current_user)
                 while True:
-                    command_line = input(self.update_prompt()).strip()
+                    try:
+                        command_line = input(self.update_prompt()).strip()
+                    except EOFError:
+                        self.exit()
+
                     if command_line:
                         self.execute_command(command_line)
                     if command_line == 'logout':
@@ -43,8 +51,7 @@ class FilOSShell:
                         self.is_superuser = False
                         break
                     if command_line == 'exit':
-                        print("Exiting FilOS.")
-                        return
+                        self.exit()
 
     def execute_command(self, command_line):
         """Execute a command from the input line."""

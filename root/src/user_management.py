@@ -1,6 +1,7 @@
 import os
 import hashlib
 import getpass
+import secrets
 
 class UserManagement:
     def __init__(self):
@@ -27,8 +28,8 @@ class UserManagement:
         if os.path.exists(self.users_file):
             with open(self.users_file, 'r') as file:
                 for line in file:
-                    username, password_hash = line.strip().split(',')
-                    self.users[username] = {'password': password_hash}
+                    username, password_hash, password_salt = line.strip().split(',')
+                    self.users[username] = {'password': password_hash, 'salt': password_salt}
 
     def load_group_info(self):
         """Load group information from the groups_file."""
@@ -43,7 +44,8 @@ class UserManagement:
         with open(self.users_file, 'w') as file:
             for username, user_info in self.users.items():
                 password_hash = user_info['password']
-                file.write(f"{username},{password_hash}\n")
+                password_salt = user_info['salt']
+                file.write(f"{username},{password_hash},{password_salt}\n")
 
     def save_group_info(self):
         """Save group information to the groups_file."""
@@ -61,9 +63,11 @@ class UserManagement:
             with open(os.path.join(user_path, "start.txt"), 'w') as start_file:
                 start_file.write("Welcome to FilOS!")
 
-            # Hash and save the password
-            hashed_password = hashlib.sha256(password.encode()).hexdigest()
-            self.users[username] = {'password': hashed_password}
+            # Salt, hash and save the password
+            password_salt = secrets.token_urlsafe(32)
+            salted_password = (password + password_salt).encode()
+            hashed_password = hashlib.sha256(salted_password).hexdigest()
+            self.users[username] = {'password': hashed_password, 'salt': password_salt}
 
             # Add user to groups and create home directory
             if is_superuser:
@@ -82,7 +86,8 @@ class UserManagement:
         """Authenticate a user and check group-based permissions."""
         if username in self.users and 'password' in self.users[username]:
             stored_password = self.users[username]['password']
-            if hashlib.sha256(password.encode()).hexdigest() == stored_password:
+            stored_salt = self.users[username]['salt']
+            if hashlib.sha256((password + stored_salt).encode()).hexdigest() == stored_password:
                 print(f"Logged in as {username}. Welcome back!")
                 return username, self.is_superuser(username)
             else:
