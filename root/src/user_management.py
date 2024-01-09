@@ -85,10 +85,12 @@ class UserManagement:
 
     def login_user(self, username, password):
         """Authenticate a user and check group-based permissions."""
-        if username in self.users:
-            stored_password = self.users[username]['password']
-            stored_salt = self.users[username]['salt']
-            if hashlib.sha256((password + stored_salt).encode()).hexdigest() == stored_password:
+        user_data_path = os.path.join(self.home_dir, username, "user_data", "access.txt")
+        if os.path.exists(user_data_path):
+            with open(user_data_path, 'r') as user_data_file:
+                stored_password_hash, stored_salt = user_data_file.read().strip().split(',')
+
+            if hashlib.sha256((password + stored_salt).encode()).hexdigest() == stored_password_hash:
                 print(f"Logged in as {username}. Welcome back!")
                 return username, self.is_superuser(username)
             else:

@@ -10,3 +10,4 @@ cp,cp
 mv,mv
 pad,pad
 calc,calc
+pip,pip

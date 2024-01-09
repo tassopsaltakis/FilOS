@@ -3,6 +3,8 @@ import shutil
 import subprocess
 import ast
 import operator
+import sys
+
 
 def get_absolute_path(current_dir, path):
     if os.path.isabs(path):
@@ -111,7 +113,6 @@ def calc(current_dir, *args):
         ast.Pow: operator.pow,
         ast.BitXor: operator.xor,
     }
-
     def evaluate_expression(node):
         if isinstance(node, ast.Num):
             return node.n
@@ -127,6 +128,19 @@ def calc(current_dir, *args):
         print(result)
     except Exception as e:
         print(f"Error calculating expression: {e}")
+
+def pip(current_dir, *args):
+    if args:
+        pip_command = args[0]
+        ad_argument = args[1]
+        if pip_command in 'install':
+            subprocess.check_call([sys.executable, "-m", "pip", pip_command, ad_argument])
+
+
+    else:
+        print("Usage: pip [command] [additional arguments if needed]")
+
+
 
 script_dir = os.path.dirname(os.path.abspath(__file__))  # This is your current script directory (src)
 root_dir = os.path.abspath(os.path.join(script_dir, '..', '..', 'root'))  # This goes up two levels to FilOS
