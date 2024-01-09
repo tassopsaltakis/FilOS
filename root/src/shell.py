@@ -22,7 +22,7 @@ class FilOSShell:
         if self.current_user:
             relative_path = os.path.relpath(self.current_dir, self.root_dir)
             prompt_end = "$" if self.is_superuser else ":"
-            current_time = time.ctime()
+            current_time = time.strftime("%m/%d/%Y %I:%M %p")
             purple_text = '\033[95m'
             red_text = '\033[31m'
             reset_color = '\033[0m'
