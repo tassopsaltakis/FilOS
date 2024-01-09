@@ -1,6 +1,6 @@
 # FilOS🍇 Pre-Alpha Version 0.02.3
 
-The Friendly Python OS.
+The Friendly Python OS based on the Debian Kernel
 
 Discord: https://discord.gg/pWtDgDTDMa
 
