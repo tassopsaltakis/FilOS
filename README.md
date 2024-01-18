@@ -46,6 +46,7 @@ Once this is complete, open your terminal and type:
  python3 shell.py
 ```
 You will be prompted with the login for FilOS! Enjoy!
+(bare metal coming)
 ## Contributing
 
 Pull requests are welcome. Join the discord (I would really appreciate any advice): https://discord.gg/pWtDgDTDMa
