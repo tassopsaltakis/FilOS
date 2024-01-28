@@ -148,42 +148,58 @@ def pip(current_dir, *args):
 
 '''User and Group Management'''
 
+
 def userman(*args):
+    if len(args) < 3:
+        print("Error: Not enough arguments provided.")
+        return
+
+    script_dir = os.path.dirname(os.path.realpath('__file__'))  # If you need the script directory
     root_dir = os.path.abspath(os.path.join(script_dir, '..', '..', 'root'))
     home_dir = os.path.join(root_dir, 'home')
     config_dir = os.path.join(root_dir, 'config')
     users_file = os.path.join(config_dir, 'users.txt')
-    groups_file = os.path.join(config_dir, 'groups.txt')
+
     option = args[1]
-    ##we need to add an argument here that checks if a user already exsits.
     user_name = args[2]
+
     if option == 'adduser':
         user_path = os.path.join(home_dir, user_name)
 
-        if not os.path.exists(user_path):
-            os.makedirs(user_path)
-            with open(os.path.join(user_path, "start.txt"), 'w') as start_file:
-                start_file.write("Welcome to FilOS!")
-            password = getpass.getpass("Enter password: ")
-            password2 = getpass.getpass("Enter again: ")
-            # Salt, hash and save the password
-            password_salt = secrets.token_urlsafe(32)
-            salted_password = (password + password_salt).encode()
-            hashed_password = hashlib.sha256(salted_password).hexdigest()
+        # Check if user already exists
+        if os.path.exists(user_path):
+            return "User already exists."
 
-            # Save password hash and salt in the user's access.txt file
-            user_data_path = os.path.join(user_path, "user_data")
-            os.makedirs(user_data_path, exist_ok=True)
-            with open(os.path.join(user_data_path, "access.txt"), 'w') as access_file:
-                access_file.write(f"{hashed_password},{password_salt}\n")
-            # Update user list in users.txt
-            with open(users_file, 'a') as file:
-                file.write(f"{user_name}\n")
-            return "User Added"
+        os.makedirs(user_path)
+        with open(os.path.join(user_path, "start.txt"), 'w') as start_file:
+            start_file.write("Welcome to FilOS!")
+        password = getpass.getpass("Enter password: ")
+        password2 = getpass.getpass("Enter again: ")
+
+        if password != password2:
+            return "Passwords do not match."
+
+        # Salt, hash and save the password
+        password_salt = secrets.token_urlsafe(32)
+        salted_password = (password + password_salt).encode()
+        hashed_password = hashlib.sha256(salted_password).hexdigest()
+
+        # Save password hash and salt
+        user_data_path = os.path.join(user_path, "user_data")
+        os.makedirs(user_data_path, exist_ok=True)
+        with open(os.path.join(user_data_path, "access.txt"), 'w') as access_file:
+            access_file.write(f"{hashed_password},{password_salt}\n")
+
+        # Update user list
+        with open(users_file, 'a') as file:
+            file.write(f"{user_name}\n")
+        return "User Added"
+
     elif option == 'deluser':
         user_path = os.path.join(home_dir, user_name)
         if os.path.exists(user_path):
-            os.remove(user_path)
+            shutil.rmtree(user_path)  # Corrected to remove directory
+
         with open(users_file, "r") as f:
             lines = f.readlines()
         with open(users_file, "w") as f:
@@ -192,34 +208,66 @@ def userman(*args):
                     f.write(line)
         return "User Deleted"
 
+
 def groupman(*args):
+    # Check for minimum required arguments
+    if len(args) < 3:
+        print("Error: Not enough arguments provided.")
+        return
+
+    script_dir = os.path.dirname(os.path.realpath('__file__'))
     root_dir = os.path.abspath(os.path.join(script_dir, '..', '..', 'root'))
-    home_dir = os.path.join(root_dir, 'home')
     config_dir = os.path.join(root_dir, 'config')
-    users_file = os.path.join(config_dir, 'users.txt')
     groups_file = os.path.join(config_dir, 'groups.txt')
+
     option = args[1]
-    ##we need to add an argument here that checks if a group already exsits.
     group_name = args[2]
-    user_name = args[3]
+
+    if option in ['addgroup', 'delgroup'] and len(args) != 3:
+        print("Error: Incorrect number of arguments for the operation.")
+        return
+
     if option == 'addgroup':
-        with open(groups_file, 'w') as file:
-            for group_name in groups_file.groups.items():
-                file.write(f"{group_name}:\n")
+        with open(groups_file, 'r') as file:
+            groups = file.read()
+            if group_name + ':' in groups:
+                print(f"Group '{group_name}' already exists.")
+                return
+
+        with open(groups_file, 'a') as file:
+            file.write(f"{group_name}:\n")
+
     elif option == 'delgroup':
         with open(groups_file, "r") as f:
             lines = f.readlines()
         with open(groups_file, "w") as f:
             for line in lines:
-                if line.strip("\n") != group_name:
+                if line.strip("\n") != f"{group_name}:":
                     f.write(line)
-    elif option == 'adduser': ##not done yet
+
+    elif option == 'adduser':
+        if len(args) < 4:
+            print("Error: Not enough arguments for adding a user to a group.")
+            return
+
+        user_name = args[3]  # User name is the fourth argument
+        updated_groups = []
+        group_found = False
+
         with open(groups_file, "r") as f:
-            lines = f.readlines()
+            for line in f:
+                if line.startswith(group_name + ":"):
+                    group_found = True
+                    if user_name not in line:
+                        line = line.strip() + f" {user_name}\n"  # Append the user to the group
+                updated_groups.append(line)
+
+        if not group_found:
+            print(f"Group '{group_name}' does not exist.")
+            return
+
         with open(groups_file, "w") as f:
-            for line in lines:
-                if line.strip("\n") != group_name:
-                    f.write(f"{group_name}")
+            f.writelines(updated_groups)
 
 
 
