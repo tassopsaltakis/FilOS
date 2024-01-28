@@ -1,4 +1,7 @@
+import getpass
+import hashlib
 import os
+import secrets
 import shutil
 import subprocess
 import ast
@@ -12,6 +15,7 @@ def get_absolute_path(current_dir, path):
 
     return os.path.normpath(f"{current_dir}/{path}")
 
+'''OS Commands'''
 
 def ls(current_dir, *args):
     # figure out if the path is absolute or not
@@ -139,6 +143,88 @@ def pip(current_dir, *args):
 
     else:
         print("Usage: pip [command] [additional arguments if needed]")
+
+
+
+'''User and Group Management'''
+
+def userman(*args):
+    root_dir = os.path.abspath(os.path.join(script_dir, '..', '..', 'root'))
+    home_dir = os.path.join(root_dir, 'home')
+    config_dir = os.path.join(root_dir, 'config')
+    users_file = os.path.join(config_dir, 'users.txt')
+    groups_file = os.path.join(config_dir, 'groups.txt')
+    option = args[1]
+    ##we need to add an argument here that checks if a user already exsits.
+    user_name = args[2]
+    if option == 'adduser':
+        user_path = os.path.join(home_dir, user_name)
+
+        if not os.path.exists(user_path):
+            os.makedirs(user_path)
+            with open(os.path.join(user_path, "start.txt"), 'w') as start_file:
+                start_file.write("Welcome to FilOS!")
+            password = getpass.getpass("Enter password: ")
+            password2 = getpass.getpass("Enter again: ")
+            # Salt, hash and save the password
+            password_salt = secrets.token_urlsafe(32)
+            salted_password = (password + password_salt).encode()
+            hashed_password = hashlib.sha256(salted_password).hexdigest()
+
+            # Save password hash and salt in the user's access.txt file
+            user_data_path = os.path.join(user_path, "user_data")
+            os.makedirs(user_data_path, exist_ok=True)
+            with open(os.path.join(user_data_path, "access.txt"), 'w') as access_file:
+                access_file.write(f"{hashed_password},{password_salt}\n")
+            # Update user list in users.txt
+            with open(users_file, 'a') as file:
+                file.write(f"{user_name}\n")
+            return "User Added"
+    elif option == 'deluser':
+        user_path = os.path.join(home_dir, user_name)
+        if os.path.exists(user_path):
+            os.remove(user_path)
+        with open(users_file, "r") as f:
+            lines = f.readlines()
+        with open(users_file, "w") as f:
+            for line in lines:
+                if line.strip("\n") != user_name:
+                    f.write(line)
+        return "User Deleted"
+
+def groupman(*args):
+    root_dir = os.path.abspath(os.path.join(script_dir, '..', '..', 'root'))
+    home_dir = os.path.join(root_dir, 'home')
+    config_dir = os.path.join(root_dir, 'config')
+    users_file = os.path.join(config_dir, 'users.txt')
+    groups_file = os.path.join(config_dir, 'groups.txt')
+    option = args[1]
+    ##we need to add an argument here that checks if a group already exsits.
+    group_name = args[2]
+    user_name = args[3]
+    if option == 'addgroup':
+        with open(groups_file, 'w') as file:
+            for group_name in groups_file.groups.items():
+                file.write(f"{group_name}:\n")
+    elif option == 'delgroup':
+        with open(groups_file, "r") as f:
+            lines = f.readlines()
+        with open(groups_file, "w") as f:
+            for line in lines:
+                if line.strip("\n") != group_name:
+                    f.write(line)
+    elif option == 'adduser': ##not done yet
+        with open(groups_file, "r") as f:
+            lines = f.readlines()
+        with open(groups_file, "w") as f:
+            for line in lines:
+                if line.strip("\n") != group_name:
+                    f.write(f"{group_name}")
+
+
+
+
+
 
 
 

@@ -11,3 +11,5 @@ mv,mv
 pad,pad
 calc,calc
 pip,pip
+userman,userman
+groupman,groupman
