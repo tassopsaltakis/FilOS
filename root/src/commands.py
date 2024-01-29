@@ -269,7 +269,23 @@ def groupman(*args):
         with open(groups_file, "w") as f:
             f.writelines(updated_groups)
 
-
+def sysset(*args):
+    file_path = os.path.join(config_dir, "colorCodes.txt")
+    option = args[0]
+    second_option = args[1]
+    if option == 'customize':
+        print("========================")
+        print("Customization Settings")
+        print("========================")
+        print("1. Appearance")
+        print("")
+        config_dir
+        with open(file_path, 'r') as file:
+            for line in file:
+                index, data = line.strip().split(':', 1)
+                if index == second_option:
+                    return data
+        return "Color not found"
 
 
 
