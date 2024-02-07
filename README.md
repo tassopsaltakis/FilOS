@@ -1,8 +1,9 @@
-# FilOS🍇 Pre-Alpha Version 0.02.3
+# FilOS🍇 Pre-Alpha Version 0.03
 ![fLogo](https://github.com/tassopsaltakis/FilOS/assets/40706153/bb118e8b-5090-408f-8a1e-6b8b7f9a1499)
 The Friendly Python OS based on and Ubuntu Kernel
 
 Discord: https://discord.gg/pWtDgDTDMa
+Website: coming soon...
 
 ## Installation
 
@@ -19,14 +20,18 @@ FilOS/                       #FilOS Folder
 │                      
 └── root/
     ├── home/                # User home directories
-    │   └── [user1]/         # Your user directory will automatically be created upon user creation
+    │   └── superuser/         # There is a superuser by default the password is test. 
     │
     ├── tmp/                 # Temporary files
     │
     ├── src/                 # Source code for the OS
     │   ├── shell.py
+    │   ├── access_control_commands.py
+    │   ├── access_control_dirs.py
     │   ├── commands.py
+    │   ├── systemctl.py
     │   ├── user_management.py
+    │   ├── common.py
     │   └── login.py
     │
     |
