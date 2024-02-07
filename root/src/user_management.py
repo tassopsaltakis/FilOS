@@ -2,8 +2,13 @@ import os
 import hashlib
 import getpass
 import secrets
+import common
+from common import current_user_info
+from access_control_commands import update_access_index_for_new_user
+from access_control_directories import update_access_index_for_new_user
 
 class UserManagement:
+
     def __init__(self):
         """Set up directories for user home and configuration files."""
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -51,7 +56,33 @@ class UserManagement:
                 file.write(f"{group_name}:{member_list}\n")
 
     def create_user(self, username, password, is_superuser=False):
-        """Create a new user, assign them to groups, and create a home directory."""
+        """create the user group for group based access"""
+
+        group_name = username
+
+        group_found = False  # Initialize a flag to track if the group is found
+
+        # Read the file and store lines
+        with open(common.groups_file, "r") as f:
+            lines = f.readlines()
+
+        # Modify lines as needed
+        with open(common.groups_file, "w") as f:
+            for line in lines:
+                parts = line.strip().split(":", 1)
+                if len(parts) == 2:
+                    current_group_name, users = parts
+                    if current_group_name == group_name:
+                        group_found = True
+                        if username not in users.split():
+                            # Append the user to the group and add newline for file writing
+                            line = f"{group_name}:{users} {username}"
+                f.write(line)
+
+        if not group_found:
+            # Correctly append the new group to the file
+            with open(common.groups_file, 'a') as f:  # Use 'a' mode for appending
+                f.write(f"{group_name}:{username}\n")  # Append the new group with the username
         user_path = os.path.join(self.home_dir, username)
 
         if not os.path.exists(user_path):
@@ -72,7 +103,7 @@ class UserManagement:
 
             # Update user list in users.txt
             with open(self.users_file, 'a') as file:
-                file.write(f"{username}\n")
+                file.write(f"\n{username}")
 
             # Add user to groups and create home directory
             if is_superuser:
@@ -80,9 +111,19 @@ class UserManagement:
             self.add_user_to_group(username, 'user')
 
             print(f"\n{'Superuser' if is_superuser else 'User'} {username} created successfully! Ready to login.\n")
+            new_user_directory = os.path.join("home", username)
+            update_access_index_for_new_user(new_user_directory, username)
         else:
             print(f"\nUser '{username}' already exists.\n")
 
+    def is_user_in_superuser_group(self, username):
+        """Check if a user is in the superuser group."""
+        with open(self.groups_file, 'r') as file:
+            for line in file:
+                group_name, members = line.strip().split(':', 1)
+                if group_name == 'superuser' and username in members.split():
+                    return True
+        return False
     def login_user(self, username, password):
         """Authenticate a user and check group-based permissions."""
         user_data_path = os.path.join(self.home_dir, username, "user_data", "access.txt")
@@ -137,8 +178,11 @@ class UserManagement:
                 username = input("Enter username: ")
                 password = getpass.getpass("Enter password: ")
                 user_info = self.login_user(username, password)
-                if user_info:
+                if user_info:  # After successful login
                     username, is_superuser = user_info
+                    global current_user_info
+                    current_user_info['username'] = username
+                    current_user_info['is_superuser'] = is_superuser
                     return username, is_superuser
             elif choice == '2':
                 username = input("Enter username: ")

@@ -1,0 +1,2 @@
+userman:superuser
+groupman:superuser

@@ -1,5 +1,6 @@
 # Import necessary modules
 from user_management import UserManagement
+from common import current_user_info
 import os
 
 def run_login_sequence():
