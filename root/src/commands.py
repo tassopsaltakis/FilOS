@@ -9,8 +9,6 @@ import operator
 import sys
 import common
 import user_management
-from access_control_commands import update_access_index_for_new_user
-from access_control_directories import update_access_index_for_new_user
 from common import current_user_info
 
 
@@ -33,9 +31,22 @@ def ls(current_dir, *args):
     except Exception as e:
         print(f"ls: cannot access '{path}': {e}")
 
+
 def cd(current_dir, *args):
-    new_dir = os.path.join(current_dir, args[0]) if args else current_dir
-    return new_dir if os.path.isdir(new_dir) else current_dir
+    if args:
+        new_dir = os.path.join(current_dir, args[0]) if args else current_dir
+        # Convert new_dir to its absolute path to handle cases where new_dir is not in standard format
+        new_dir = os.path.abspath(new_dir)
+
+        # Check if the user has access to the new directory
+        if check_directory_access(new_dir):
+            return new_dir if os.path.isdir(new_dir) else current_dir
+        else:
+            print(f"Access denied: '{new_dir}'")
+            return current_dir
+    else:
+        # If no arguments, no directory change is attempted, so just return current_dir
+        return current_dir
 
 def pwd(current_dir, *args):
     print(current_dir)
@@ -155,8 +166,18 @@ def pip(current_dir, *args):
 
 
 def userman(*args):
+    # Check if the user has permission to use userman commands
+    if not check_command_access('userman'):
+        print("Access denied for user management commands.")
+        return
+
     user_mgmt = user_management.UserManagement()  # Instantiate the UserManagement class
+    if len(args) < 2:
+        print("Usage: userman [adduser|deluser]")
+        return
+
     option = args[1]
+
     if option == 'adduser':
         username = input("Enter username: ")
         password = getpass.getpass("Enter password: ")
@@ -166,7 +187,7 @@ def userman(*args):
             print("Passwords didn't match. Please try again.")
         else:
             user_mgmt.create_user(username, password)  # Call create_user on the instance
-            return "User Added"
+            print("User Added")
 
     elif option == 'deluser':
         username = input("Enter username: ")

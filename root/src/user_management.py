@@ -4,8 +4,6 @@ import getpass
 import secrets
 import common
 from common import current_user_info
-from access_control_commands import update_access_index_for_new_user
-from access_control_directories import update_access_index_for_new_user
 
 class UserManagement:
 
@@ -112,7 +110,6 @@ class UserManagement:
 
             print(f"\n{'Superuser' if is_superuser else 'User'} {username} created successfully! Ready to login.\n")
             new_user_directory = os.path.join("home", username)
-            update_access_index_for_new_user(new_user_directory, username)
         else:
             print(f"\nUser '{username}' already exists.\n")
 
