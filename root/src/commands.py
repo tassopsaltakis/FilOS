@@ -10,6 +10,8 @@ import sys
 import common
 import user_management
 from common import current_user_info
+from gbp import check_directory_access
+from common import current_user_info
 
 
 def get_absolute_path(current_dir, path):
@@ -33,20 +35,22 @@ def ls(current_dir, *args):
 
 
 def cd(current_dir, *args):
+    username = current_user_info['username']
     if args:
         new_dir = os.path.join(current_dir, args[0]) if args else current_dir
         # Convert new_dir to its absolute path to handle cases where new_dir is not in standard format
-        new_dir = os.path.abspath(new_dir)
+        new_dir_abs = os.path.abspath(new_dir)
 
         # Check if the user has access to the new directory
-        if check_directory_access(new_dir):
-            return new_dir if os.path.isdir(new_dir) else current_dir
+        if check_directory_access(username, new_dir_abs):  # Use the corrected variable here
+            return new_dir if os.path.isdir(new_dir_abs) else current_dir
         else:
-            print(f"Access denied: '{new_dir}'")
+            print("Access denied.")
             return current_dir
     else:
         # If no arguments, no directory change is attempted, so just return current_dir
         return current_dir
+
 
 def pwd(current_dir, *args):
     print(current_dir)
@@ -166,10 +170,6 @@ def pip(current_dir, *args):
 
 
 def userman(*args):
-    # Check if the user has permission to use userman commands
-    if not check_command_access('userman'):
-        print("Access denied for user management commands.")
-        return
 
     user_mgmt = user_management.UserManagement()  # Instantiate the UserManagement class
     if len(args) < 2:

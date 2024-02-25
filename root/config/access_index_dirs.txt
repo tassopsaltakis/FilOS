@@ -1,6 +1,1 @@
-home\balls:balls
-home\balls:superuser
-home\testthisdick:testthisdick
-home\testthisdick:superuser
-home\test:test
-home\test:superuser
+home\:
