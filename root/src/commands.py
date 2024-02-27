@@ -127,6 +127,19 @@ def pad(current_dir, *args):
     else:
         print("Usage: pad filename")
 
+
+def browse(current_dir, *args):
+    # The path to the Browse script should be adjusted based on your directory structure
+    browse_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), '..', '..', 'root', 'misc', 'browse', 'browse.py'))
+
+    if args:
+        # If arguments are provided, they can be forwarded to the Browse script
+        subprocess.run(['python', browse_path] + list(args))
+    else:
+        # If no arguments are provided, simply run the Browse script without any
+        subprocess.run(['python', browse_path])
+
 def calc(current_dir, *args):
     expression = ''.join(args)  # Joining args as the expression might be split into several arguments
     allowed_operators = {

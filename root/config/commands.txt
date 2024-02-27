@@ -9,6 +9,7 @@ rm,rm
 cp,cp
 mv,mv
 pad,pad
+browse,browse
 calc,calc
 pip,pip
 userman,userman

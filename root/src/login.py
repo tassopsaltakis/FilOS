@@ -1,6 +1,6 @@
 # Import necessary modules
 from user_management import UserManagement
-from common import current_user_info
+from common import home_dir, config_dir
 import os
 
 def run_login_sequence():
@@ -24,8 +24,7 @@ def run_login_sequence():
         os.chdir(user_home)  # Change directory to home for regular user
         print(f"Logged in as user: {current_user}")
 
-    # Your code for launching the shell or next steps goes here
-    # ...
+
 
 if __name__ == "__main__":
     run_login_sequence()

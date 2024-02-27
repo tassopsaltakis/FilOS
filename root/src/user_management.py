@@ -4,6 +4,7 @@ import getpass
 import secrets
 import common
 from common import current_user_info
+from common import home_dir
 
 class UserManagement:
 
@@ -99,6 +100,7 @@ class UserManagement:
             with open(os.path.join(user_data_path, "access.txt"), 'w') as access_file:
                 access_file.write(f"{hashed_password},{password_salt}\n")
 
+
             # Update user list in users.txt
             with open(self.users_file, 'a') as file:
                 file.write(f"\n{username}")
@@ -161,6 +163,7 @@ class UserManagement:
         """Check if a user is in a group."""
         return username in self.groups.get(group_name, [])
 
+
     def run(self):
         if not self.superuser_exists():
             print("No superuser found. Setting up now.")
@@ -190,6 +193,7 @@ class UserManagement:
                     print("Passwords didn't match. Please try again.")
                 
                 else:
+
                     self.create_user(username, password)
             else:
                 print("Invalid option. Please try again.")
