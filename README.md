@@ -1,4 +1,4 @@
-# FilOS🍇 Pre-Alpha Version 0.03.2
+# FilOS🍇 Pre-Alpha Version 0.03.3
 ![fLogo](https://github.com/tassopsaltakis/FilOS/assets/40706153/bb118e8b-5090-408f-8a1e-6b8b7f9a1499)
 The Friendly Python OS based on and Ubuntu Kernel
 
